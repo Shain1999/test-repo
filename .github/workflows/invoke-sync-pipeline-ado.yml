@@ -2,14 +2,14 @@ name: Trigger ADO pipeline on push to main
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]        # fire on every push to main
 
 jobs:
   queue-ado:
     runs-on: ubuntu-latest
 
     env:
-      ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}
+      ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}        
       ORG: WSSI-AMD
       PROJECT: Carneros
       PIPELINE_ID: 88
@@ -30,16 +30,13 @@ jobs:
             }
           }')
 
-          # Base-64 encode ":" + PAT for Basic scheme
-          AUTH=$(printf ':%s' "$ADO_PAT" | base64)
-
-          # Debug
+          # Debug ‑ print body and URL
           echo "$BODY" | jq
           echo "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
 
-          # Send request with Basic auth
+          # Send request
           curl -L -f -sS \
-               -H "Authorization: Basic $AUTH" \
+               -H "Authorization: Bearer $ADO_PAT" \
                -H "Content-Type: application/json" \
                -d "$BODY" \
                "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
