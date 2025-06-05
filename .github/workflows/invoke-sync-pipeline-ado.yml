@@ -36,7 +36,7 @@ jobs:
 
           # Send request
           curl -L -f -sS \
-               -H "Authorization: Bearer $ADO_PAT" \
                -H "Content-Type: application/json" \
+               -H "Authorization: Bearer $ADO_PAT" \
                -d "$BODY" \
                "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
