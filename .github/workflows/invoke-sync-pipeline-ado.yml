@@ -30,6 +30,7 @@ jobs:
             }')
           
           echo "$BODY" | jq           # optional: print nicely for debugging
+          echo "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE/runs?api-version=7.1" | jq
           
           curl -H "Authorization: Bearer $ADO_PAT" \
                -H "Content-Type: application/json" \
