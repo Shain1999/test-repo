@@ -2,14 +2,14 @@ name: Trigger ADO pipeline on push to main
 
 on:
   push:
-    branches: [ "main" ]        # fire on every push to main
+    branches: [ "main" ]
 
 jobs:
   queue-ado:
     runs-on: ubuntu-latest
 
     env:
-      ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}        
+      ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}
       ORG: WSSI-AMD
       PROJECT: Carneros
       PIPELINE_ID: 88
@@ -18,21 +18,28 @@ jobs:
     steps:
       - name: Queue Azure DevOps pipeline
         run: |
+          # Build request body
           BODY=$(jq -n --arg branch "$BRANCH" '
-            {
-              resources: {
-                repositories: {
-                  self: {
-                    refName: $branch
-                  }
+          {
+            resources: {
+              repositories: {
+                self: {
+                  refName: $branch
                 }
               }
-            }')
-          
-          echo "$BODY" | jq           # optional: print nicely for debugging
+            }
+          }')
+
+          # Base-64 encode ":" + PAT for Basic scheme
+          AUTH=$(printf ':%s' "$ADO_PAT" | base64)
+
+          # Debug
+          echo "$BODY" | jq
           echo "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
-          
-          curl -H "Authorization: Bearer $ADO_PAT" \
+
+          # Send request with Basic auth
+          curl -L -f -sS \
+               -H "Authorization: Basic $AUTH" \
                -H "Content-Type: application/json" \
                -d "$BODY" \
-               "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE/runs?api-version=7.1"
+               "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
