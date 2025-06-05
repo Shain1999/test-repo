@@ -13,7 +13,7 @@ jobs:
       ORG: WSSI-AMD
       PROJECT: Carneros
       PIPELINE_ID: 88
-      BRANCH: refs/heads/main
+      BRANCH: main
 
     steps:
       - name: Queue Azure DevOps pipeline
@@ -31,7 +31,7 @@ jobs:
           
           echo "$BODY" | jq           # optional: print nicely for debugging
           
-          curl -u :$ADO_PAT \
+          curl -H "Authorization: Bearer $ADO_PAT" \
                -H "Content-Type: application/json" \
                -d "$BODY" \
                "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE/runs?api-version=7.1"
