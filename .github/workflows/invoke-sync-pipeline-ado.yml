@@ -1,0 +1,37 @@
+name: Trigger ADO pipeline on push to main
+
+on:
+  push:
+    branches: [ "main" ]        # fire on every push to main
+
+jobs:
+  queue-ado:
+    runs-on: ubuntu-latest
+
+    env:
+      ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}        
+      ORG: WSSI-AMD
+      PROJECT: Carneros
+      PIPELINE_ID: 88
+      BRANCH: refs/heads/main
+
+    steps:
+      - name: Queue Azure DevOps pipeline
+        run: |
+          BODY=$(jq -n --arg branch "$BRANCH" '
+            {
+              resources: {
+                repositories: {
+                  self: {
+                    refName: $branch
+                  }
+                }
+              }
+            }')
+          
+          echo "$BODY" | jq           # optional: print nicely for debugging
+          
+          curl -u :$ADO_PAT \
+               -H "Content-Type: application/json" \
+               -d "$BODY" \
+               "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE/runs?api-version=7.1"
