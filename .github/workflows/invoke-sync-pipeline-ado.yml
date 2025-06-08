@@ -38,7 +38,7 @@ jobs:
           # Build request body (unchanged) …
 
           # Create Base-64 value without printing the PAT
-          B64_PAT=$(printf ':%s' "$ADO_PAT" | base64)
+          B64_PAT=$(printf ':%s' "$ADO_PAT" | base64 | tr -d '\n')
           
           # Send request
           curl -L -f -sS \
