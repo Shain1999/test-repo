@@ -33,10 +33,17 @@ jobs:
           # Debug ‑ print body and URL
           echo "$BODY" | jq
           echo "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
+          
 
+          # Build request body (unchanged) …
+
+          # Create Base-64 value without printing the PAT
+          B64_PAT=$(printf ':%s' "$ADO_PAT" | base64)
+          
           # Send request
           curl -L -f -sS \
                -H "Content-Type: application/json" \
-               -H "Authorization: Bearer $ADO_PAT" \
+               -H "Authorization: Basic $B64_PAT" \
                -d "$BODY" \
                "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
+
