@@ -10,6 +10,8 @@ jobs:
 
     env:
       ADO_PAT: ${{ secrets.ADO_PAT_PIPELINE_SYNC_INVOKER }}        
+      SECRET: ${{ secrets.TEST_SECRET }}
+      WEBHOOK: Test-webhook-github-trigger
       ORG: WSSI-AMD
       PROJECT: Carneros
       PIPELINE_ID: 88
@@ -33,17 +35,21 @@ jobs:
           # Debug ‑ print body and URL
           echo "$BODY" | jq
           echo "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
+          echo "https://dev.azure.com/$ORG/_apis/public/distributedtask/webhooks/Test-webhook-github-trigger?api-version=6.0-preview"
           
 
           # Build request body (unchanged) …
 
           # Create Base-64 value without printing the PAT
           B64_PAT=$(printf ':%s' "$ADO_PAT" | base64 | tr -d '\n')
+          HASH_SECRET=$(printf '%s' "$SECRET_KEY" | openssl dgst -sha256 | awk '{print $2}')
+          URL="https://dev.azure.com/$ORG/_apis/public/distributedtask/webhooks/$WEBHOOK?api-version=6.0-preview"
+
           
           # Send request
-          curl -L -f -sS \
-               -H "Content-Type: application/json" \
-               -H "Authorization: Basic $B64_PAT" \
-               -d "$BODY" \
-               "https://dev.azure.com/$ORG/$PROJECT/_apis/pipelines/$PIPELINE_ID/runs?api-version=7.1"
+          curl -X POST -L -f -sS \
+           -H "Content-Type: application/json" \
+           -H "x-port-signature: $HASH_SECRET" \
+           -d "$BODY" \
+           "$URL"
 
