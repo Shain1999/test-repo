@@ -34,13 +34,14 @@ jobs:
           # Debug ‑ print body and URL
           echo "$BODY" | jq
           
-          echo "https://dev.azure.com/$ORG/_apis/public/distributedtask/webhooks/Test-webhook-github-trigger?api-version=6.0-preview"
+          
           
 
           # Build request body (unchanged) …
           
           HASH_SECRET=$(printf '%s' "$ADO_PAT" | openssl dgst -sha256 | awk '{print $2}')
           URL="https://dev.azure.com/$ORG/_apis/public/distributedtask/webhooks/$WEBHOOK?api-version=6.0-preview"
+          echo "$URL"
 
           
           # Send request
